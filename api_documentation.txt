@@ -1,0 +1,789 @@
+API Documentation
+=================
+
+This document provides a detailed overview of the API endpoints for the Parcel Delivery System.
+
+### Authentication
+
+#### 1. User Login
+
+*   **Method:** `POST`
+*   **URL:** `/users/login`
+*   **Description:** Authenticates a user and returns user data.
+*   **Request Body (application/json):
+    ```json
+    {
+        "email": "customer@example.com",
+        "password": "password123"
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "user": {
+            "id": "60d5f2c5e6a4b72b8c6e8f1a",
+            "name": "Test Customer",
+            "email": "customer@example.com",
+            "role": "customer"
+        }
+    }
+    ```
+*   **Error Response (401 Unauthorized):
+    ```json
+    {
+        "message": "Invalid credentials"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Login failed"
+    }
+    ```
+
+#### 2. User Registration
+
+*   **Method:** `POST`
+*   **URL:** `/users/register`
+*   **Description:** Creates a new user account.
+*   **Request Body (application/json):
+    ```json
+    {
+        "name": "New User",
+        "email": "newuser@example.com",
+        "password": "password123",
+        "role": "customer"
+    }
+    ```
+*   **Success Response (201 Created):
+    ```json
+    {
+        "user": {
+            "id": "60d5f2c5e6a4b72b8c6e8f1b",
+            "name": "New User",
+            "email": "newuser@example.com",
+            "role": "customer"
+        }
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "message": "User already exists"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Registration failed"
+    }
+    ```
+
+---
+
+### Users
+
+#### 1. Get All Users
+
+*   **Method:** `GET`
+*   **URL:** `/users`
+*   **Description:** Retrieves a list of all users.
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "_id": "60d5f2c5e6a4b72b8c6e8f1a",
+            "name": "Test Customer",
+            "email": "customer@example.com",
+            "role": "customer",
+            "createdAt": "2025-08-03T10:00:00.000Z"
+        },
+        {
+            "_id": "60d5f2c5e6a4b72b8c6e8f1c",
+            "name": "Test Agent",
+            "email": "agent@example.com",
+            "role": "agent",
+            "createdAt": "2025-08-03T10:05:00.000Z"
+        }
+    ]
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "No agents found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch agents"
+    }
+    ```
+
+#### 2. Delete a User
+
+*   **Method:** `DELETE`
+*   **URL:** `/users/:userId`
+*   **Description:** Deletes a specific user by their ID.
+*   **URL Params:**
+    *   `userId` (string, required): The ID of the user to delete.
+*   **Success Response (200 OK):
+    ```json
+    {
+        "message": "User deleted successfully"
+    }
+    ```
+*   **Error Response (403 Forbidden):
+    ```json
+    {
+        "message": "Cannot delete admin users"
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "User not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to delete user"
+    }
+    ```
+
+---
+
+### Agents
+
+#### 1. Get All Agents
+
+*   **Method:** `GET`
+*   **URL:** `/agents`
+*   **Description:** Retrieves a list of all users with the 'agent' role.
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "_id": "60d5f2c5e6a4b72b8c6e8f1c",
+            "name": "Test Agent",
+            "email": "agent@example.com",
+            "role": "agent",
+            "createdAt": "2025-08-03T10:05:00.000Z"
+        }
+    ]
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "No agents found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch agents"
+    }
+    ```
+
+#### 2. Update Agent Location
+
+*   **Method:** `PATCH`
+*   **URL:** `/agents/:id/location`
+*   **Description:** Updates the geographical location of an agent.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the agent.
+*   **Request Body (application/json):
+    ```json
+    {
+        "location": {
+            "type": "Point",
+            "coordinates": [-73.935242, 40.730610]
+        }
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Agent location updated successfully",
+        "data": {
+            "agentId": "60d5f2c5e6a4b72b8c6e8f1c",
+            "location": {
+                "type": "Point",
+                "coordinates": [-73.935242, 40.730610]
+            },
+            "updatedAt": "2025-08-03T12:00:00.000Z"
+        }
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "success": false,
+        "message": "Invalid location format. Expected { type: \"Point\", coordinates: [longitude, latitude] }"
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "success": false,
+        "message": "Agent not found or user is not an agent"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Failed to update agent location"
+    }
+    ```
+
+---
+
+### Parcels
+
+#### 1. Create a New Parcel
+
+*   **Method:** `POST`
+*   **URL:** `/parcels`
+*   **Description:** Creates a new parcel booking.
+*   **Request Body (application/json):
+    ```json
+    {
+        "customer": {
+            "id": "60d5f2c5e6a4b72b8c6e8f1a",
+            "name": "Test Customer"
+        },
+        "pickupDetails": {
+            "address": "123 Pickup St, City"
+        },
+        "deliveryDetails": {
+            "address": "456 Delivery Ave, City"
+        },
+        "parcelDetails": {
+            "weight": 2.5,
+            "category": "Electronics"
+        },
+        "payment": {
+            "method": "cod",
+            "amount": 50
+        },
+        "currentStatus": "booked"
+    }
+    ```
+*   **Success Response (201 Created):
+    ```json
+    {
+        "_id": "60d5f3a4e6a4b72b8c6e8f1d",
+        "trackingNumber": "PKG-2025-1001",
+        "customer": { "id": "60d5f2c5e6a4b72b8c6e8f1a", "name": "Test Customer" },
+        "pickupDetails": {
+            "address": "123 Pickup St, City"
+        },
+        "deliveryDetails": {
+            "address": "456 Delivery Ave, City"
+        },
+        "parcelDetails": {
+            "weight": 2.5,
+            "category": "Electronics"
+        },
+        "payment": {
+            "method": "cod",
+            "amount": 50
+        },
+        "currentStatus": "booked",
+        "createdAt": "2025-08-03T11:00:00.000Z",
+        "updatedAt": "2025-08-03T11:00:00.000Z",
+        "estimatedDelivery": "2025-08-06T11:00:00.000Z"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to create parcel"
+    }
+    ```
+
+#### 2. Get All Parcels
+
+*   **Method:** `GET`
+*   **URL:** `/parcels`
+*   **Description:** Retrieves a list of all parcels (for admin view).
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "_id": "60d5f3a4e6a4b72b8c6e8f1d",
+            "trackingNumber": "PKG-2025-1001",
+            "customer": { "id": "60d5f2c5e6a4b72b8c6e8f1a", "name": "Test Customer" },
+            "currentStatus": "booked",
+            "createdAt": "2025-08-03T11:00:00.000Z"
+        }
+    ]
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch parcels"
+    }
+    ```
+
+#### 3. Get Parcel by ID
+
+*   **Method:** `GET`
+*   **URL:** `/parcels/:id`
+*   **Description:** Retrieves a single parcel by its ID.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Success Response (200 OK):
+    ```json
+    {
+        "_id": "60d5f3a4e6a4b72b8c6e8f1d",
+        "trackingNumber": "PKG-2025-1001",
+        "customer": { "id": "60d5f2c5e6a4b72b8c6e8f1a", "name": "Test Customer" },
+        "currentStatus": "booked",
+        "createdAt": "2025-08-03T11:00:00.000Z"
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "Parcel not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch parcel"
+    }
+    ```
+
+#### 4. Get Delivered Parcels for a Customer
+
+*   **Method:** `GET`
+*   **URL:** `/parcels/delivered/:customerId`
+*   **Description:** Retrieves all delivered parcels for a specific customer.
+*   **URL Params:**
+    *   `customerId` (string, required): The ID of the customer.
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "_id": "60d5f3a4e6a4b72b8c6e8f1e",
+            "trackingNumber": "PKG-2025-1002",
+            "customer": { "id": "60d5f2c5e6a4b72b8c6e8f1a", "name": "Test Customer" },
+            "currentStatus": "delivered",
+            "createdAt": "2025-08-01T11:00:00.000Z"
+        }
+    ]
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "No delivered parcels found for this customer"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch delivered parcels"
+    }
+    ```
+
+#### 5. Get Active Parcels for a Customer
+
+*   **Method:** `GET`
+*   **URL:** `/parcels/active/:customerId`
+*   **Description:** Retrieves all active (not delivered) parcels for a specific customer.
+*   **URL Params:**
+    *   `customerId` (string, required): The ID of the customer.
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "_id": "60d5f3a4e6a4b72b8c6e8f1d",
+            "trackingNumber": "PKG-2025-1001",
+            "customer": { "id": "60d5f2c5e6a4b72b8c6e8f1a", "name": "Test Customer" },
+            "currentStatus": "in_transit",
+            "createdAt": "2025-08-03T11:00:00.000Z"
+        }
+    ]
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "No pending parcels found for this customer"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch pending parcels"
+    }
+    ```
+
+#### 6. Assign Agent to Parcel
+
+*   **Method:** `PATCH`
+*   **URL:** `/parcels/:id/assign-agent`
+*   **Description:** Assigns an agent to a parcel and notifies both the customer and the agent.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Request Body (application/json):
+    ```json
+    {
+        "agentId": "60d5f2c5e6a4b72b8c6e8f1c",
+        "agentName": "Test Agent",
+        "agentContact": "agent@example.com"
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Assignment completed with notifications"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Assignment failed",
+        "error": "Parcel not found"
+    }
+    ```
+
+---
+
+### Agent Parcels
+
+#### 1. Get Parcels for an Agent
+
+*   **Method:** `GET`
+*   **URL:** `/agentparcels/:agentId`
+*   **Description:** Retrieves all parcels assigned to a specific agent.
+*   **URL Params:**
+    *   `agentId` (string, required): The ID of the agent.
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "count": 1,
+        "data": [
+            {
+                "_id": "60d5f3a4e6a4b72b8c6e8f1d",
+                "trackingNumber": "PKG-2025-1001",
+                "assignedAgent": { "id": "60d5f2c5e6a4b72b8c6e8f1c", "name": "Test Agent" },
+                "currentStatus": "assigned",
+                "createdAt": "2025-08-03T11:00:00.000Z"
+            }
+        ]
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "success": false,
+        "message": "Agent not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Error finding parcels"
+    }
+    ```
+
+#### 2. Update Parcel Status (by Agent)
+
+*   **Method:** `PATCH`
+*   **URL:** `/agparcels/:id/status`
+*   **Description:** Updates the status of a parcel by an agent.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Request Body (application/json):
+    ```json
+    {
+        "status": "in_transit",
+        "notes": "Picked up from customer."
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Parcel status updated successfully"
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "success": false,
+        "message": "Status and notes are required"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Failed to update parcel status",
+        "error": "Parcel not found or status not updated"
+    }
+    ```
+
+#### 3. Accept Parcel (by Agent)
+
+*   **Method:** `PATCH`
+*   **URL:** `/agparcels/:id/accept`
+*   **Description:** Allows an agent to accept an assigned parcel.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Request Body (application/json):
+    ```json
+    {
+        "agentId": "60d5f2c5e6a4b72b8c6e8f1c"
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Parcel accepted successfully"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Failed to accept parcel",
+        "error": "Parcel not found or not assigned to you"
+    }
+    ```
+
+#### 4. Decline Parcel (by Agent)
+
+*   **Method:** `PATCH`
+*   **URL:** `/agparcels/:id/decline`
+*   **Description:** Allows an agent to decline an assigned parcel.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Request Body (application/json):
+    ```json
+    {
+        "agentId": "60d5f2c5e6a4b72b8c6e8f1c",
+        "reason": "Out of delivery area."
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Parcel declined successfully"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Failed to decline parcel",
+        "error": "Parcel not found or not assigned to you"
+    }
+    ```
+
+#### 5. Mark Parcel as Delivered (by Agent)
+
+*   **Method:** `PATCH`
+*   **URL:** `/agparcels/:id/delivered`
+*   **Description:** Allows an agent to mark a parcel as delivered.
+*   **URL Params:**
+    *   `id` (string, required): The ID of the parcel.
+*   **Request Body (application/json):
+    ```json
+    {
+        "agentId": "60d5f2c5e6a4b72b8c6e8f1c"
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Parcel marked as delivered"
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "success": false,
+        "message": "Parcel not found or not in transit"
+    }
+    ```
+
+---
+
+### Tracking
+
+#### 1. Get Tracking Information
+
+*   **Method:** `GET`
+*   **URL:** `/tracking/:parcelId`
+*   **Description:** Retrieves tracking information for a specific parcel.
+*   **URL Params:**
+    *   `parcelId` (string, required): The ID of the parcel.
+*   **Success Response (200 OK):
+    ```json
+    {
+        "trackingNumber": "PKG-2025-1001",
+        "status": "in_transit",
+        "statusHistory": [
+            { "status": "booked", "timestamp": "2025-08-03T11:00:00.000Z", "notes": "Parcel created." },
+            { "status": "assigned", "timestamp": "2025-08-03T11:30:00.000Z", "notes": "Assigned to agent Test Agent" },
+            { "status": "in_transit", "timestamp": "2025-08-03T12:00:00.000Z", "notes": "Parcel accepted by agent" }
+        ],
+        "estimatedDelivery": "2025-08-06T11:00:00.000Z",
+        "pickupAddress": "123 Pickup St, City",
+        "deliveryAddress": "456 Delivery Ave, City",
+        "agent": "Test Agent",
+        "lastLocation": { "type": "Point", "coordinates": [-73.935242, 40.730610] }
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "message": "Invalid parcel ID format"
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "Parcel not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch tracking information"
+    }
+    ```
+
+---
+
+### Notifications
+
+#### 1. Get Notifications for a User
+
+*   **Method:** `GET`
+*   **URL:** `/notifications/:userId`
+*   **Description:** Retrieves all notifications for a specific user.
+*   **URL Params:**
+    *   `userId` (string, required): The ID of the user.
+*   **Success Response (200 OK):
+    ```json
+    [
+        {
+            "type": "agent_assigned",
+            "message": "Your parcel PKG-2025-1001 has been assigned to agent Test Agent",
+            "read": false,
+            "createdAt": "2025-08-03T11:30:00.000Z",
+            "parcelId": "60d5f3a4e6a4b72b8c6e8f1d"
+        }
+    ]
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "User not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to fetch notifications"
+    }
+    ```
+
+#### 2. Mark Notification as Read
+
+*   **Method:** `PUT`
+*   **URL:** `/notifications/:userId/mark-as-read`
+*   **Description:** Marks a specific notification as read.
+*   **URL Params:**
+    *   `userId` (string, required): The ID of the user.
+*   **Request Body (application/json):
+    ```json
+    {
+        "createdAt": "2025-08-03T11:30:00.000Z"
+    }
+    ```
+*   **Success Response (200 OK):
+    ```json
+    {
+        "success": true,
+        "message": "Notification marked as read successfully",
+        "data": {
+            "userId": "60d5f2c5e6a4b72b8c6e8f1a",
+            "createdAt": "2025-08-03T11:30:00.000Z",
+            "modifiedCount": 1
+        }
+    }
+    ```
+*   **Error Response (400 Bad Request):
+    ```json
+    {
+        "message": "Both createdAt and parcelId are required in request body",
+        "requiredFields": ["createdAt", "parcelId"]
+    }
+    ```
+*   **Error Response (404 Not Found):
+    ```json
+    {
+        "message": "Notification not found"
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "success": false,
+        "message": "Failed to mark notification as read"
+    }
+    ```
+
+---
+
+### Reports
+
+#### 1. Get Parcel Reports
+
+*   **Method:** `GET`
+*   **URL:** `/parcels/reports`
+*   **Description:** Generates reports on parcel statistics.
+*   **Query Params:**
+    *   `range` (string, optional): The time range for the report. Can be `daily`, `weekly`, or `monthly`. Defaults to `daily`.
+    *   `date` (string, optional): The date for the report in `YYYY-MM-DD` format. Defaults to the current date.
+*   **Success Response (200 OK):
+    ```json
+    {
+        "totalParcels": 10,
+        "delivered": 5,
+        "cod": 3,
+        "breakdown": [
+            { "label": "09:00", "parcels": 2, "cod": 1 },
+            { "label": "10:00", "parcels": 3, "cod": 1 },
+            { "label": "11:00", "parcels": 5, "cod": 1 }
+        ],
+        "topAgent": "Test Agent",
+        "topClient": "Test Customer",
+        "statusBreakdown": {
+            "booked": 2,
+            "transit": 3,
+            "failed": 0
+        }
+    }
+    ```
+*   **Error Response (500 Internal Server Error):
+    ```json
+    {
+        "message": "Failed to generate reports"
+    }
+    ```
